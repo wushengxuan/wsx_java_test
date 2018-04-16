@@ -1,5 +1,6 @@
 package threads;
 
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -11,6 +12,11 @@ import java.util.concurrent.Semaphore;
  */
 public class SemaPhore {
     public static void main(String[] args) {
+        TreeSet set = new TreeSet();
+        HashSet hashSet = new HashSet();
+        LinkedHashMap linkedHashMap = new LinkedHashMap();
+        List list = new ArrayList();
+        Collections.sort(list);
         // 线程池
         ExecutorService exec = Executors.newCachedThreadPool();
         // 只能5个线程同时访问
@@ -23,9 +29,9 @@ public class SemaPhore {
                     // 获取许可
                     semp.acquire();
                     System.out.println("Accessing: " + NO);
-                    Thread.sleep((long) (Math.random() * 6000));
+                    //Thread.sleep((long) (Math.random() * 6000));
                     // 访问完后，释放
-                    semp.release();
+                    //semp.release();
                     //availablePermits()指的是当前信号灯库中有多少个可以被使用
                     System.out.println("-----------------" + semp.availablePermits());
                 } catch (InterruptedException e) {
