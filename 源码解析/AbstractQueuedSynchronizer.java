@@ -383,15 +383,17 @@ public abstract class AbstractQueuedSynchronizer
         /** Marker to indicate a node is waiting in exclusive mode */
         static final Node EXCLUSIVE = null;
 
-        /** waitStatus value to indicate thread has cancelled */
+
+
+        /** waitStatus value to indicate thread has cancelled 节点取消*/
         static final int CANCELLED =  1;
-        /** waitStatus value to indicate successor's thread needs unparking */
+        /** waitStatus value to indicate successor's thread needs unparking 节点等待触发*/
         static final int SIGNAL    = -1;
-        /** waitStatus value to indicate thread is waiting on condition */
+        /** waitStatus value to indicate thread is waiting on condition 节点等待条件*/
         static final int CONDITION = -2;
         /**
          * waitStatus value to indicate the next acquireShared should
-         * unconditionally propagate
+         * unconditionally propagate 节点状态需要向后传播
          */
         static final int PROPAGATE = -3;
 
@@ -802,12 +804,14 @@ public abstract class AbstractQueuedSynchronizer
             /*
              * This node has already set status asking a release
              * to signal it, so it can safely park.
+             * 可以安全的挂起线程
              */
             return true;
         if (ws > 0) {
             /*
              * Predecessor was cancelled. Skip over predecessors and
              * indicate retry.
+             * 如果队列中节点的pre节点状态为cacel则把pre节点从队列中剔除
              */
             do {
                 node.prev = pred = pred.prev;
@@ -818,6 +822,7 @@ public abstract class AbstractQueuedSynchronizer
              * waitStatus must be 0 or PROPAGATE.  Indicate that we
              * need a signal, but don't park yet.  Caller will need to
              * retry to make sure it cannot acquire before parking.
+             * 将线程设置为可以等待挂起的状态
              */
             compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
         }
@@ -866,7 +871,7 @@ public abstract class AbstractQueuedSynchronizer
                 //node的prev
                 final Node p = node.predecessor();
                 if (p == head && tryAcquire(arg)) {
-                    //设置头结点 覆盖空的头节点
+                    //设置头结点 把已经获取锁的线程移出等待队列
                     setHead(node);
                     p.next = null; // help GC
                     failed = false;
@@ -1201,7 +1206,7 @@ public abstract class AbstractQueuedSynchronizer
      *        can represent anything you like.
      */
     public final void acquire(int arg) {
-        if (!tryAcquire(arg) &&
+        if (!tryAcquire(arg) && //自己实现方法
             acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
             selfInterrupt();
     }
