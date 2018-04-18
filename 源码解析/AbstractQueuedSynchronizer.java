@@ -638,7 +638,7 @@ public abstract class AbstractQueuedSynchronizer
 
     /**
      * Wakes up node's successor, if one exists.
-     *
+     * 如果线程还活着 唤醒线程
      * @param node the node
      */
     private void unparkSuccessor(Node node) {
@@ -656,8 +656,11 @@ public abstract class AbstractQueuedSynchronizer
          * just the next node.  But if cancelled or apparently null,
          * traverse backwards from tail to find the actual
          * non-cancelled successor.
+         *
          */
+        //获取到需要唤醒的线程节点
         Node s = node.next;
+        //线程为空或被取消 则从队列的尾部开始向前找
         if (s == null || s.waitStatus > 0) {
             s = null;
             for (Node t = tail; t != null && t != node; t = t.prev)
@@ -985,6 +988,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
+     * 共享锁 包括semphare等
      * Acquires in shared interruptible mode.
      * @param arg the acquire argument
      */
@@ -2043,9 +2047,12 @@ public abstract class AbstractQueuedSynchronizer
         public final void await() throws InterruptedException {
             if (Thread.interrupted())
                 throw new InterruptedException();
+            //将线程添加到condition维护的队列中
             Node node = addConditionWaiter();
+            //释放当前线程占有的锁
             int savedState = fullyRelease(node);
             int interruptMode = 0;
+            //遍历AQS节点 看当前节点是否在队列中
             while (!isOnSyncQueue(node)) {
                 LockSupport.park(this);
                 if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
