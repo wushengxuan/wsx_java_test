@@ -871,7 +871,7 @@ public abstract class AbstractQueuedSynchronizer
         try {
             boolean interrupted = false;
             for (;;) {
-                //node的prev
+                //node的前一个节点
                 final Node p = node.predecessor();
                 if (p == head && tryAcquire(arg)) {
                     //设置头结点 把已经获取锁的线程移出等待队列
