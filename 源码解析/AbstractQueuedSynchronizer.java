@@ -638,7 +638,7 @@ public abstract class AbstractQueuedSynchronizer
 
     /**
      * Wakes up node's successor, if one exists.
-     * 如果线程还活着 唤醒线程
+     * 如果线程还活着 依次唤醒线程
      * @param node the node
      */
     private void unparkSuccessor(Node node) {
@@ -1697,6 +1697,7 @@ public abstract class AbstractQueuedSynchronizer
          */
         Node p = enq(node);
         int ws = p.waitStatus;
+        // 如果该结点的状态为cancel 或者修改waitStatus失败，则直接唤醒
         if (ws > 0 || !compareAndSetWaitStatus(p, ws, Node.SIGNAL))
             LockSupport.unpark(node.thread);
         return true;
@@ -1884,10 +1885,11 @@ public abstract class AbstractQueuedSynchronizer
          */
         private void doSignal(Node first) {
             do {
-                if ( (firstWaiter = first.nextWaiter) == null)
+
+                if ( (firstWaiter = first.nextWaiter) == null)//修改头结点，完成旧头结点的移出工作
                     lastWaiter = null;
                 first.nextWaiter = null;
-            } while (!transferForSignal(first) &&
+            } while (!transferForSignal(first) && //将老的头结点，加入到AQS的等待队列中
                      (first = firstWaiter) != null);
         }
 
@@ -1950,6 +1952,7 @@ public abstract class AbstractQueuedSynchronizer
          *         returns {@code false}
          */
         public final void signal() {
+            //判断当前线程是否获取到了锁
             if (!isHeldExclusively())
                 throw new IllegalMonitorStateException();
             Node first = firstWaiter;
@@ -2052,12 +2055,13 @@ public abstract class AbstractQueuedSynchronizer
             //释放当前线程占有的锁
             int savedState = fullyRelease(node);
             int interruptMode = 0;
-            //遍历AQS节点 看当前节点是否在队列中
+            //遍历AQS节点 看当前节点是否在队列中 不在队列中就挂起线程
             while (!isOnSyncQueue(node)) {
                 LockSupport.park(this);
                 if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
                     break;
             }
+            //唤醒后线程继续竞争锁
             if (acquireQueued(node, savedState) && interruptMode != THROW_IE)
                 interruptMode = REINTERRUPT;
             if (node.nextWaiter != null) // clean up if cancelled
